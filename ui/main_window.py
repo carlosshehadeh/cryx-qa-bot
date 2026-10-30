@@ -139,9 +139,13 @@ class MainWindow(QMainWindow):
         top = QHBoxLayout()
         top.addWidget(theme.Wordmark())
         top.addSpacing(12)
+        self.site = QComboBox()
+        self.site.setObjectName("lcd")
+        self.site.setMinimumWidth(190)
+        self.site.currentIndexChanged.connect(self._site_changed)
         self.profile = QComboBox()
         self.profile.setObjectName("lcd")
-        self.profile.setMinimumWidth(230)
+        self.profile.setMinimumWidth(190)
         self.profile.currentIndexChanged.connect(self._profile_changed)
         self.title = QLineEdit()
         self.title.setObjectName("lcd")
@@ -155,7 +159,7 @@ class MainWindow(QMainWindow):
         self.key.setObjectName("lcd")
         self.key.setPlaceholderText("e.g. F min")
         self.key.setMaximumWidth(90)
-        for label, w, stretch in (("Profile", self.profile, 0), ("Track title", self.title, 1),
+        for label, w, stretch in (("Website", self.site, 0), ("Genre", self.profile, 0), ("Track title", self.title, 1),
                                   ("BPM", self.bpm, 0), ("Key", self.key, 0)):
             top.addWidget(theme.column(theme.caps(label), w), stretch)
         top.addSpacing(8)
@@ -232,13 +236,33 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(central)
         self.statusBar().showMessage(f"Data folder: {self.config.rules_dir().parent}")
 
-    def _load_profiles(self):
+    def _load_profiles(self, keep=None):
+        """Website picker first, then the genres that website has a rules file for."""
+        self.catalog = rules.catalog(self.config.rules_dir())
+        want = keep or self.config.default_profile
+        site = self.catalog.get(want, {}).get("marketplace")
+        self.site.blockSignals(True)
+        self.site.clear()
+        for name in rules.marketplaces(self.config.rules_dir()):
+            self.site.addItem(name, name)
+        self.site.setCurrentIndex(max(0, self.site.findData(site)))
+        self.site.blockSignals(False)
+        self._site_changed(keep=want)
+
+    def _site_changed(self, *_, keep=None):
+        site = self.site.currentData()
+        current = keep or self.profile.currentData()
+        genre = self.catalog.get(current, {}).get("genre")
         self.profile.blockSignals(True)
         self.profile.clear()
-        for pid, name in rules.profiles(self.config.rules_dir()).items():
-            self.profile.addItem(name, pid)
-        i = self.profile.findData(self.config.default_profile)
-        self.profile.setCurrentIndex(max(0, i))
+        for pid, p in self.catalog.items():
+            if p["marketplace"] == site:
+                self.profile.addItem(p["genre"], pid)
+        i = self.profile.findData(current)
+        if i < 0:   # same genre on the new website, if it has one
+            i = next((n for n in range(self.profile.count())
+                      if self.catalog[self.profile.itemData(n)]["genre"] == genre), 0)
+        self.profile.setCurrentIndex(i)
         self.profile.blockSignals(False)
         self._profile_changed()
 

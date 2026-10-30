@@ -22,16 +22,29 @@ def _read(path):
     return json.loads(Path(path).read_text(encoding="utf-8"))
 
 
-def profiles(rules_dir):
-    """{profile id: display name}, sorted by name."""
+def catalog(rules_dir):
+    """{profile id: {"name", "marketplace", "genre"}}, sorted by name."""
     found = {}
     for d in (bundle_dir() / "rules", Path(rules_dir)):
         for f in sorted(Path(d).glob("*.json")):
             try:
-                found[f.stem] = _read(f).get("name", f.stem)
+                raw = _read(f)
             except ValueError:
                 continue
-    return dict(sorted(found.items(), key=lambda kv: kv[1].lower()))
+            name = raw.get("name", f.stem)
+            found[f.stem] = {"name": name, "marketplace": raw.get("marketplace", "Other"),
+                             "genre": raw.get("genre", name)}
+    return dict(sorted(found.items(), key=lambda kv: kv[1]["name"].lower()))
+
+
+def profiles(rules_dir):
+    """{profile id: display name}, sorted by name."""
+    return {pid: p["name"] for pid, p in catalog(rules_dir).items()}
+
+
+def marketplaces(rules_dir):
+    """Website names, in the order the profiles sort."""
+    return list(dict.fromkeys(p["marketplace"] for p in catalog(rules_dir).values()))
 
 
 def load(profile, rules_dir=None):

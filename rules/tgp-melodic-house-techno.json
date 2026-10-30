@@ -1,0 +1,86 @@
+{
+  "name": "The Ghost Production: Melodic House & Techno",
+  "marketplace": "The Ghost Production",
+  "genre": "Melodic House & Techno",
+  "_source": "Checked 2026-10-30 against theghostproduction.com/how-to-upload-tracks. Platform rules change: check them before each submission and edit this file.",
+  "bpm": 124,
+  "format": {
+    "sample_rate": 44100,
+    "bit_depth": [
+      16,
+      24
+    ]
+  },
+  "stems": {
+    "_count_note": "TGP sets no minimum stem count, only 'labeled by instrument'. 10 is the Cryx standard; lower it here if a track really has fewer parts.",
+    "min_count": 10,
+    "silent_below_dbfs": -80.0,
+    "max_length_diff_samples": 1,
+    "forbidden_names": [
+      "REF",
+      "SC TRIG",
+      "Sidechain",
+      "BUS",
+      "GROUP",
+      "Master"
+    ]
+  },
+  "mix": {
+    "_note": "Unmastered mixdown: at least -3 dB headroom, no limiter or compression on the master. TGP gives no lower limit.",
+    "peak_max_dbfs": -3.0,
+    "peak_min_dbfs": null
+  },
+  "null_test": {
+    "_note": "Starting thresholds. Tune on the first real exports.",
+    "pass_db": -40.0,
+    "fail_db": -25.0,
+    "max_offset_samples": 64,
+    "beats_per_bar": 4
+  },
+  "master": {
+    "_lufs_note": "TGP's upload page sets no LUFS range, so loudness is only measured and noted.",
+    "lufs_min": null,
+    "lufs_max": null,
+    "_peak_note": "Master must not exceed 0 dBFS: leave at least 0.1 dB headroom.",
+    "peak_measure": "true_peak",
+    "peak_min_db": null,
+    "peak_max_db": -0.1,
+    "peak_confirmed": true,
+    "length_min_seconds": 120,
+    "length_max_seconds": 480,
+    "_length_note": "Extended mix 4:00 to 8:00, radio edit 2:00 to 3:00.",
+    "mix_length_seconds": {
+      "Extended Mix": [
+        240,
+        480
+      ],
+      "Radio Mix": [
+        120,
+        180
+      ]
+    },
+    "_plan_note": "Melodic techno plan: 6:58 extended mix.",
+    "plan_extended_seconds": 418,
+    "plan_tolerance_seconds": 45
+  },
+  "mixes": {
+    "_note": "Extended mix and radio edit are optional but recommended on TGP.",
+    "extended_required": false,
+    "radio_required": false,
+    "radio_stems_required": false
+  },
+  "mp3": {
+    "bitrate_kbps": 320
+  },
+  "checklist": [
+    "Zip is named Track_Name.zip with folders Mastered, Unmastered, Stems, MIDI (and DAW_Project if you sell it).",
+    "Unmastered mixdown WAV goes in the Unmastered folder (the bot's Main.wav), no limiter or compression on the master.",
+    "MIDI files for all melodic and harmonic parts (Track_Name_Lead.mid, Track_Name_Chords.mid).",
+    "Vocals in the track? Add an Instrumental (WAV + MP3) and pick the vocal type: Royalty-Free (with source link), Exclusive or AI Vocal (tool name + URL).",
+    "Melodic third-party samples used? Pick instrumental type Semi-Original, not Original.",
+    "Selling the project? Full DAW project package with every sample and asset, so it opens with nothing missing.",
+    "Artwork: JPG, square 1:1, at least 500x500 px, RGB, no artist or label names, no watermarked stock photos.",
+    "Track info: title, genre, exact BPM, key, description, DAW + version, OS + version, third-party plugins used.",
+    "Title has no artist, DJ, label or trademark names."
+  ]
+}

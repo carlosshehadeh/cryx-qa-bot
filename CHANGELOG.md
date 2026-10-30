@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.2.0
+
+- Website picker: choose EDM Ghost Production, The Ghost Production or House of
+  Tracks, then the genre. New rules files `tgp-*` and `hot-*` for tech house and
+  melodic house & techno, from each site's seller pages (checked 2026-10-30).
+- Rules can list several allowed sample rates and bit depths, accept 32-bit
+  float (`allow_float`), leave a limit open with `null`, and set lengths per
+  mix (`mix_length_seconds`).
+- Each profile has a `checklist` of the website's rules the bot can't check;
+  the report ends with it under "Before you upload to ...".
+- EDM GP files now cite the seller page. It confirms the 0 to -0.3 dB master
+  peak; still a WARN until the limiter ceiling is decided (BRIEF.md 8.1).
+
 ## 0.1.0
 
 ### Engine

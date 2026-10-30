@@ -48,6 +48,8 @@ class Report:
     when: str = field(default_factory=lambda: datetime.now().strftime("%Y-%m-%d %H:%M"))
     results: list = field(default_factory=list)
     numbers: dict = field(default_factory=dict)   # {"Masters": {...}, "Stems Extended": {...}}
+    marketplace: str = ""
+    checklist: list = field(default_factory=list)  # the website's rules the bot can't check itself
 
     # -- summary --------------------------------------------------------
     def count(self, level):
@@ -70,6 +72,8 @@ class Report:
         out = [f"# QA REPORT: {self.title}", ""]
         out.append(f"- Date: {self.when}")
         out.append(f"- Profile: {self.profile}")
+        if self.marketplace:
+            out.append(f"- Website: {self.marketplace}")
         if self.bpm:
             out.append(f"- BPM: {self.bpm:g}")
         if self.key:
@@ -101,6 +105,13 @@ class Report:
                 out.append(f"**{section}**")
                 out.append("")
                 out.extend(f"- {k}: {v}" for k, v in values.items())
+        if self.checklist:
+            out.append("")
+            out.append(f"## Before you upload to {self.marketplace or 'the website'}")
+            out.append("")
+            out.append("The bot can't check these. Tick them off yourself:")
+            out.append("")
+            out.extend(f"- [ ] {item}" for item in self.checklist)
         out.append("")
         out.append("## For qa.md")
         out.append("")

@@ -2,7 +2,7 @@
   "name": "EDM GP: Tech House",
   "marketplace": "EDM Ghost Production",
   "genre": "Tech House",
-  "_note": "Numbers from the project references (BRIEF.md section 5). Platform rules change: check them before each submission and edit this file.",
+  "_source": "Checked 2026-10-30 against edm-ghost-production.com/for-sellers/package. Platform rules change: check them before each submission and edit this file.",
   "bpm": 128,
   "format": {
     "sample_rate": 44100,
@@ -35,7 +35,7 @@
   "master": {
     "lufs_min": -9.0,
     "lufs_max": -2.0,
-    "_peak_note": "OPEN QUESTION (BRIEF.md section 8.1): the melodic techno reference says 0 to -0.3 dB, the CRYX MASTER rack limits at -1.0 dB true peak. Until confirmed, a miss is only a WARN.",
+    "_peak_note": "The seller page (checked 2026-10-30) says peak 0 dB to -0.3 dB on every mastered mix. The CRYX MASTER rack limits at -1.0 dB true peak, which misses that. Still only a WARN until Carlos decides: raise the limiter ceiling to about -0.2 dB, then set peak_confirmed to true.",
     "peak_measure": "true_peak",
     "peak_min_db": -0.3,
     "peak_max_db": 0.0,
@@ -54,5 +54,13 @@
   },
   "mp3": {
     "bitrate_kbps": 320
-  }
+  },
+  "checklist": [
+    "Every melodic part (bass, lead, pad, arp, synth) has its own MIDI file, named like the stem (Bass.mid, Lead.mid).",
+    "Vocals in the track (even chops, adlibs or one-shots)? Add an Instrumental Mix (mastered WAV + MP3) and its unmastered WAV.",
+    "Unmastered WAVs for every version (extended, radio, instrumental), no plugins on the master, all at the same peak between -3 and -6 dB.",
+    "Used groups for mixing? Put the ungrouped stems in a folder called 'Ungrouped' inside 'Stems'.",
+    "Radio mix only if the extended mix has an 8 to 32 bar intro and outro; about 2 to 3 minutes.",
+    "No contact details or personal info anywhere: file names, ID3 tags, project files, metadata."
+  ]
 }

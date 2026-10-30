@@ -40,8 +40,11 @@ Folder and file name patterns can be changed in Settings.
 - Drop the export folder on the window (or click the drop zone). The checks run
   straight away: red = FAIL, yellow = WARN, green = PASS. Click a row for the
   fix and the numbers.
-- Pick the profile (tech house, melodic house & techno). BPM comes from the
-  profile; change it to your track's BPM so the null test names the right bars.
+- Pick the **Website** you're uploading to (EDM Ghost Production, The Ghost
+  Production, House of Tracks), then the **Genre** (tech house, melodic house &
+  techno). BPM comes from the profile; change it to your track's BPM so the null
+  test names the right bars. The report ends with that website's "Before you
+  upload" checklist: the rules the bot can't check itself (MIDI, artwork, track info).
 - **Build buyer zip** is greyed out while anything fails. Warnings need one
   click: "I checked these".
 - **Copy report for qa.md** puts the Markdown report on the clipboard.
@@ -72,7 +75,10 @@ profile not usable. From source: `python -m qabot check ...`.
 
 ## Rules
 
-One JSON file per marketplace and genre. The bundled ones are copied to
+One JSON file per marketplace and genre: `edmgp-*` (EDM Ghost Production),
+`tgp-*` (The Ghost Production), `hot-*` (House of Tracks). Each says in `_source`
+which seller page it was checked against and when. A limit set to `null` means
+the website sets none. The bundled ones are copied to
 `CryxQAData\rules` on first run; edit those (Settings > Open rules folder) when a
 platform changes a number. Your edits are kept across updates; new fields from
 an update are added underneath them.

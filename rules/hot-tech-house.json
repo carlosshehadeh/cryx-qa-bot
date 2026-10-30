@@ -1,0 +1,79 @@
+{
+  "name": "House of Tracks: Tech House",
+  "marketplace": "House of Tracks",
+  "genre": "Tech House",
+  "_source": "Checked 2026-10-30 against houseoftracks.com/page/upload-requirements and /page/upload-rules. Platform rules change: check them before each submission and edit this file.",
+  "bpm": 128,
+  "format": {
+    "_note": "Upload requirements: 44.1 or 48 kHz, 24 or 32 bit. The older upload-rules page allows 16-bit masters; the requirements page is stricter, so the bot follows it.",
+    "sample_rate": [
+      44100,
+      48000
+    ],
+    "bit_depth": [
+      24,
+      32
+    ],
+    "allow_float": true
+  },
+  "stems": {
+    "_count_note": "HoT sets no minimum stem count, but kick, hats and snare/clap must each be their own stem. 10 is the Cryx standard.",
+    "min_count": 10,
+    "silent_below_dbfs": -80.0,
+    "max_length_diff_samples": 1,
+    "_forbidden_note": "HoT allows bus stems in the main stems folder, so BUS and GROUP are not forbidden here.",
+    "forbidden_names": [
+      "REF",
+      "SC TRIG",
+      "Sidechain",
+      "Master"
+    ]
+  },
+  "mix": {
+    "_note": "HoT gives no headroom number for the mixdown: stems mixed but not mastered, master chain off. The bot only checks it isn't clipping.",
+    "peak_max_dbfs": -0.1,
+    "peak_min_dbfs": null
+  },
+  "null_test": {
+    "_note": "Starting thresholds. Tune on the first real exports.",
+    "pass_db": -40.0,
+    "fail_db": -25.0,
+    "max_offset_samples": 64,
+    "beats_per_bar": 4
+  },
+  "master": {
+    "lufs_min": -9.0,
+    "lufs_max": -5.0,
+    "_peak_note": "Master limited between -2 dB and 0 dB on the master channel.",
+    "peak_measure": "true_peak",
+    "peak_min_db": -2.0,
+    "peak_max_db": 0.0,
+    "peak_confirmed": true,
+    "_length_note": "Track length 2:30 to 8:00. Master and stems are the longest version, never the radio version.",
+    "length_min_seconds": 150,
+    "length_max_seconds": 480,
+    "_plan_note": "Tech house plan: 6:30 extended mix.",
+    "plan_extended_seconds": 390,
+    "plan_tolerance_seconds": 45
+  },
+  "mixes": {
+    "_note": "HoT wants the longest version; a radio version is an optional extra.",
+    "extended_required": true,
+    "radio_required": false,
+    "radio_stems_required": false
+  },
+  "mp3": {
+    "bitrate_kbps": 320
+  },
+  "checklist": [
+    "Three folders: master, stems, MIDI, plus an MP3 preview. Only .wav and .mid files inside: no project, no text files.",
+    "Master folder: the unmastered mixdown (the bot's Main.wav, master chain off) and the mastered WAV. With vocals: also both instrumentals (4 WAVs).",
+    "Every WAV the same length (except an extra radio version), and all from the longest version.",
+    "Kick, hats and snare/clap each in their own stem; a drum top loop can't replace them. No muted or empty stems.",
+    "Used FX on groups? Add the ungrouped single tracks in a separate folder inside stems.zip.",
+    "Stem names say only what's in them, in English (clap.wav, not clap.yourname.2019.wav).",
+    "One MIDI file per instrument (not one combined file), named like its stem. Transposer at the start of a chain? The MIDI shows the transposed notes.",
+    "100% original: no full melodic samples, no pack vocal chops or guitar loops, no templates, construction kits or pack MIDI.",
+    "Track info: genre, tags, name (no artist or label names), BPM, key, description, price, main instrument, vocal details."
+  ]
+}

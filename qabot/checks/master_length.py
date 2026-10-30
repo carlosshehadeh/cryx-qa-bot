@@ -1,4 +1,7 @@
-"""Master length inside the profile's limits; the extended mix near the genre's plan."""
+"""Master length inside the profile's limits; the extended mix near the genre's plan.
+
+mix_length_seconds can set tighter limits for one mix, e.g. {"Radio Mix": [120, 180]}.
+"""
 
 from qabot.audio import fmt_time
 from qabot.report import FAIL, PASS, WARN, Result
@@ -9,11 +12,11 @@ ID = "master_length"
 
 def run(ctx):
     r = ctx.rules["master"]
-    lo, hi = r["length_min_seconds"], r["length_max_seconds"]
     plan, tol = r.get("plan_extended_seconds"), r.get("plan_tolerance_seconds", 45)
     out = []
     for label, p in masters(ctx):
         sec = ctx.info(p).seconds
+        lo, hi = r.get("mix_length_seconds", {}).get(label, (r["length_min_seconds"], r["length_max_seconds"]))
         ctx.note("Masters", f"{label} length", fmt_time(sec))
         if not lo <= sec <= hi:
             out.append(Result(ID, FAIL, f"{label}: {fmt_time(sec)} long, needs {fmt_time(lo)} to {fmt_time(hi)}.",

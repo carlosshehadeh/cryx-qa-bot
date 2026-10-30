@@ -57,6 +57,16 @@ def test_good_folder_builds(window, export, monkeypatch):
     assert (out / "Window Build BUYER.zip").exists()
 
 
+def test_website_picker_keeps_the_genre(window):
+    sites = [window.site.itemText(i) for i in range(window.site.count())]
+    assert sites == ["EDM Ghost Production", "House of Tracks", "The Ghost Production"]
+    assert window.site.currentText() == "EDM Ghost Production" and window.profile.currentData() == "edmgp-tech-house"
+    window.profile.setCurrentIndex(window.profile.findData("edmgp-melodic-house-techno"))
+    window.site.setCurrentIndex(window.site.findText("House of Tracks"))
+    assert window.profile.currentData() == "hot-melodic-house-techno"
+    assert window.profile.count() == 2 and window.bpm.value() == 124
+
+
 def test_settings_dialog_round_trip(app, config):
     from ui.settings_dialog import SettingsDialog
     dlg = SettingsDialog(config)
