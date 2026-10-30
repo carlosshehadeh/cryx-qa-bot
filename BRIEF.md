@@ -269,3 +269,10 @@ In a new folder next to the export, `<Title> BUYER\`:
 ## 10. Definition of done for v0.1
 
 Carlos exports a track from Ableton into the folder layout above, double-clicks the .exe, drops the folder in, and within a minute sees a green/yellow/red list. Track one's old bass stems fail the null test and the bot names the bass stems as the cause. After the fix, everything passes, the bot builds `<Title> BUYER.zip` with clean WAVs and MP3s and nothing private inside, and the report pastes straight into `qa.md`. The .exe + its folder copied to another PC with no internet still works.
+
+---
+
+## 11. Changes since this brief (keep this list up to date)
+
+- 2026-10-30: three websites (EDM Ghost Production, The Ghost Production, House of Tracks), each with its own rules file in `rules/sites/` and zip layout, combined with a genre file in `rules/genres/`. All three sites ask for the unmastered mix in the package, so `Main.wav` (renamed) **is** now delivered, unlike section 6 above. Section 8 questions 1 and 2 are answered by EDM GP's package page: master peak 0 to -0.3 dB, and 320 kbps MP3s are wanted.
+- `private_files` is a WARN (private files are never copied anyway); see README.

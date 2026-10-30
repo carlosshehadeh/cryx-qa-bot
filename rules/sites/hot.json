@@ -1,0 +1,104 @@
+{
+  "name": "HoT",
+  "full_name": "House of Tracks",
+  "source": [
+    "https://houseoftracks.com/page/upload-requirements",
+    "https://houseoftracks.com/page/upload-rules"
+  ],
+  "checked": "2026-10-30",
+  "notes": [
+    "WAVs must be 24-bit or 32-bit (44.1 or 48 kHz): export at 24-bit for this site.",
+    "Exclusive for 4 months after upload. Track must be unreleased and never online.",
+    "Buses go in the stems folder; if FX sat on groups, add the ungrouped tracks in their own folder too.",
+    "Melodic parts must be your own (no melodic loops, kits or MIDI packs). Drums: one-shots and top loops only. Vocals must be edited, each used once.",
+    "No project file in the upload. Track name and metadata without artist or label names."
+  ],
+  "format": {
+    "sample_rates": [
+      44100,
+      48000
+    ],
+    "stem_bit_depths": [
+      24,
+      32
+    ],
+    "master_bit_depths": [
+      24,
+      32
+    ]
+  },
+  "stems": {
+    "min_count": 1,
+    "silent_below_dbfs": -80.0,
+    "max_length_diff_samples": 1,
+    "forbidden_names": [
+      "REF",
+      "SC TRIG",
+      "Sidechain",
+      "Master"
+    ],
+    "strip_numbers": true
+  },
+  "mix": {
+    "peak_measure": "sample_peak",
+    "peak_min_db": null,
+    "peak_max_db": null
+  },
+  "null_test": {
+    "pass_db": -40.0,
+    "fail_db": -25.0,
+    "max_offset_samples": 64,
+    "beats_per_bar": 4,
+    "_note": "Starting thresholds. Tune on the first real exports."
+  },
+  "master": {
+    "lufs_min": -9.0,
+    "lufs_max": -5.0,
+    "peak_measure": "true_peak",
+    "peak_min_db": -2.0,
+    "peak_max_db": 0.0,
+    "peak_confirmed": true
+  },
+  "length": {
+    "extended": {
+      "min": 150,
+      "max": 480,
+      "level": "FAIL"
+    },
+    "radio": {
+      "min": 0,
+      "max": 480,
+      "level": "FAIL"
+    },
+    "plan_tolerance_seconds": 45
+  },
+  "mixes": {
+    "extended_required": true,
+    "radio_required": false,
+    "radio_level": "PASS",
+    "radio_stems_required": false,
+    "unmastered_required": true,
+    "unmastered_each_version": false
+  },
+  "midi": {
+    "required": true
+  },
+  "mp3": {
+    "masters": false,
+    "unmastered": false,
+    "bitrate_kbps": 320
+  },
+  "package": {
+    "zip": "per_folder",
+    "layout": {
+      "master_extended": "masters/mastered.{ext}",
+      "master_radio": "masters/mastered radio edit.{ext}",
+      "unmastered_extended": "masters/mixdown.{ext}",
+      "unmastered_radio": "masters/mixdown radio edit.{ext}",
+      "stems_extended": "stems/{name}",
+      "stems_radio": "stems/radio edit/{name}",
+      "midi": "midi/{name}",
+      "project": null
+    }
+  }
+}

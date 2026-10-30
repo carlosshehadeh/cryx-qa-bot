@@ -10,7 +10,7 @@ from qabot.report import FAIL, Result
 from qabot.checks import (
     files_format, files_naming, stems_count, stems_silent, stems_length, stems_forbidden,
     stems_clipping, mix_headroom, null_test, master_loudness, master_peak, master_length,
-    mixes_present, privacy_metadata, privacy_names, private_files,
+    mixes_present, midi_present, privacy_metadata, privacy_names, private_files,
 )
 
 CHECKS = [
@@ -27,6 +27,7 @@ CHECKS = [
     master_peak,
     master_length,
     mixes_present,
+    midi_present,
     privacy_metadata,
     privacy_names,
     private_files,

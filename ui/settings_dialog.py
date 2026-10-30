@@ -14,6 +14,8 @@ PATTERNS = [
     ("export_suffix", "Export folder ends with"),
     ("masters_folder", "Masters folder"),
     ("project_folder", "Project folder"),
+    ("unmastered_folder", "Unmastered mixes folder"),
+    ("midi_folder", "MIDI folder"),
     ("extended_pattern", "Extended master name contains"),
     ("radio_pattern", "Radio master name contains"),
     ("main_pattern", "Main file name (pattern)"),

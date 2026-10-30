@@ -13,6 +13,8 @@ DEFAULT_NAME = re.compile(
     r"analog|meld|serum|serum 2|vital|sylenth1|massive|diva|pigments|spire)?\s*\d*$",
     re.IGNORECASE)
 LEADING_NUMBER = re.compile(r"^\d+\s*[-_.)]?\s*")
+# Sites ask for names that say only what the stem is: no BPM, year or key in it.
+EXTRA_INFO = re.compile(r"\b(\d{2,3}\s*bpm|bpm|(19|20)\d{2})\b", re.IGNORECASE)
 
 
 def _common_prefix(stems):
@@ -37,8 +39,11 @@ def run(ctx):
         prefix = _common_prefix([p.stem for p in s.stems])
         for p in s.stems:
             total += 1
-            if DEFAULT_NAME.match(bare_name(p.stem, prefix)):
+            name = bare_name(p.stem, prefix)
+            if DEFAULT_NAME.match(name):
                 bad.append(rel(ctx, p))
+            elif EXTRA_INFO.search(name):
+                bad.append(f"{rel(ctx, p)} (BPM or year in the name)")
     if bad:
         return [Result(ID, WARN, f"{plural(len(bad), 'stem')} still {'has' if len(bad) == 1 else 'have'} "
                                  "a default name instead of an instrument name.",

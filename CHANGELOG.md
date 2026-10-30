@@ -1,5 +1,25 @@
 # Changelog
 
+## 0.2.0
+
+- Three websites: EDM Ghost Production, The Ghost Production and House of
+  Tracks, each with Tech House and Melodic House & Techno (6 profiles).
+  Rules come from each site's seller pages and are split into
+  `rules/sites/*.json` and `rules/genres/*.json`.
+- The buyer package follows each site's folder and file names. The unmastered
+  mix (Main.wav, and an optional `Unmastered` folder for the radio mix) is now
+  part of the package, as all three sites ask for it. MP3s only where the site
+  wants them. House of Tracks gets masters.zip, stems.zip and midi.zip at
+  24-bit, with stem numbers taken off the names.
+- New check `midi_present`: the site wants the MIDI of the melodic parts
+  (`MIDI` folder in the export). The bot only copies the files.
+- Bit depth and sample rate rules per site, separately for stems and mixes.
+- Headroom of every unmastered version, measured as each site asks.
+- Master length limits per mix (extended / radio) and site.
+- File names with a BPM or year get a warning.
+- Report lists the site rules the bot can't measure (exclusivity, samples,
+  vocals, artwork).
+
 ## 0.1.0
 
 ### Engine

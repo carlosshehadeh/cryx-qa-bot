@@ -20,7 +20,7 @@ def main(argv=None):
     sub = ap.add_subparsers(dest="cmd", required=True)
     c = sub.add_parser("check", help="check an export folder")
     c.add_argument("folder")
-    c.add_argument("--profile", help="rules profile, e.g. edmgp-tech-house (default from Settings)")
+    c.add_argument("--profile", help="website + genre, e.g. edmgp-tech-house, tgp-tech-house, hot-melodic-house-techno")
     c.add_argument("--bpm", type=float, help="track BPM for the bar numbers (default from the profile)")
     c.add_argument("--title", help="track title (default: folder name without ' EXPORT')")
     c.add_argument("--key", default="", help="track key, shown in the report")
@@ -52,11 +52,11 @@ def main(argv=None):
         report.write(args.report)
     if args.build:
         try:
-            built = package.build(run.export, config, report,
+            built = package.build(run.export, config, report, run.rules,
                                   include_project=args.include_project or config.include_project,
-                                  make_mp3=config.mp3 and not args.no_mp3, warnings_ok=args.ok_warnings,
-                                  bitrate=run.rules.get("mp3", {}).get("bitrate_kbps", 320))
-            print(f"Built {built.zip} ({built.files} files). Report: {built.report}")
+                                  make_mp3=config.mp3 and not args.no_mp3, warnings_ok=args.ok_warnings)
+            zips = ", ".join(str(z) for z in built.zips)
+            print(f"Built {zips} ({built.files} files). Report: {built.report}")
         except package.Refused as e:
             print(str(e), file=sys.stderr)
     return report.exit_code()

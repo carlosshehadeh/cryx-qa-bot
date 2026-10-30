@@ -48,6 +48,7 @@ class Report:
     when: str = field(default_factory=lambda: datetime.now().strftime("%Y-%m-%d %H:%M"))
     results: list = field(default_factory=list)
     numbers: dict = field(default_factory=dict)   # {"Masters": {...}, "Stems Extended": {...}}
+    site_notes: list = field(default_factory=list)  # site rules the bot can't check, to remember
 
     # -- summary --------------------------------------------------------
     def count(self, level):
@@ -101,6 +102,11 @@ class Report:
                 out.append(f"**{section}**")
                 out.append("")
                 out.extend(f"- {k}: {v}" for k, v in values.items())
+        if self.site_notes:
+            out.append("")
+            out.append("## Site rules to remember (not checked by the bot)")
+            out.append("")
+            out.extend(f"- {n}" for n in self.site_notes)
         out.append("")
         out.append("## For qa.md")
         out.append("")
