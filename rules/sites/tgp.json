@@ -1,0 +1,103 @@
+{
+  "name": "TGP",
+  "full_name": "The Ghost Production",
+  "source": [
+    "https://theghostproduction.com/how-to-upload-tracks/",
+    "https://theghostproduction.com/help/track-file-requirements/",
+    "https://theghostproduction.com/help/become-a-producer-the-ghost-production/"
+  ],
+  "checked": "2026-10-30",
+  "notes": [
+    "No LUFS target and no stem count on their pages: the bot shows the numbers but doesn't judge them.",
+    "Submission form also asks for OS + DAW version and every third-party plugin; artwork JPG, square, at least 500x500.",
+    "Project (optional) must be complete with all samples. Instrumental version needed if there are vocals (not checked yet).",
+    "No AI-generated instrumentals; samples only from licensed royalty-free libraries."
+  ],
+  "format": {
+    "sample_rates": [
+      44100
+    ],
+    "stem_bit_depths": [
+      16,
+      24
+    ],
+    "master_bit_depths": [
+      16,
+      24
+    ]
+  },
+  "stems": {
+    "min_count": 1,
+    "silent_below_dbfs": -80.0,
+    "max_length_diff_samples": 1,
+    "forbidden_names": [
+      "REF",
+      "SC TRIG",
+      "Sidechain",
+      "Master"
+    ],
+    "strip_numbers": false
+  },
+  "mix": {
+    "peak_measure": "sample_peak",
+    "peak_min_db": null,
+    "peak_max_db": -3.0
+  },
+  "null_test": {
+    "pass_db": -40.0,
+    "fail_db": -25.0,
+    "max_offset_samples": 64,
+    "beats_per_bar": 4,
+    "_note": "Starting thresholds. Tune on the first real exports."
+  },
+  "master": {
+    "lufs_min": null,
+    "lufs_max": null,
+    "peak_measure": "true_peak",
+    "peak_min_db": null,
+    "peak_max_db": -0.1,
+    "peak_confirmed": true
+  },
+  "length": {
+    "extended": {
+      "min": 240,
+      "max": 480,
+      "level": "WARN"
+    },
+    "radio": {
+      "min": 120,
+      "max": 180,
+      "level": "WARN"
+    },
+    "plan_tolerance_seconds": 45
+  },
+  "mixes": {
+    "extended_required": true,
+    "radio_required": false,
+    "radio_level": "WARN",
+    "radio_stems_required": false,
+    "unmastered_required": true,
+    "unmastered_each_version": false
+  },
+  "midi": {
+    "required": true
+  },
+  "mp3": {
+    "masters": true,
+    "unmastered": true,
+    "bitrate_kbps": 320
+  },
+  "package": {
+    "zip": "single",
+    "layout": {
+      "master_extended": "Mastered/{title_}_Mastered.{ext}",
+      "master_radio": "Mastered/{title_}_Radio_Edit.{ext}",
+      "unmastered_extended": "Unmastered/{title_}_Unmastered.{ext}",
+      "unmastered_radio": "Unmastered/{title_}_Radio_Edit_Unmastered.{ext}",
+      "stems_extended": "Stems/{name}",
+      "stems_radio": "Stems/Radio/{name}",
+      "midi": "MIDI/{title_}_{name}",
+      "project": "DAW_Project/{path}"
+    }
+  }
+}

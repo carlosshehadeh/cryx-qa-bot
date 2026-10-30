@@ -28,10 +28,15 @@ new `<Title> BUYER` folder. Everything runs offline. Read [BRIEF.md](BRIEF.md) f
   Stems Extended\
     01 Kick.wav, 02 Bass Sub.wav ...   rack OFF, all individual tracks
     A Reverb Short.wav, B Delay.wav... returns as their own stems
-    Main.wav                           the unmastered mix (rack OFF): null test only, never zipped
+    Main.wav                           the unmastered mix (rack OFF): null test, then packed renamed
   Stems Radio\                         same, if radio stems are delivered
+  Unmastered\                          <Title> (Radio Mix).wav: the unmastered radio mix (rack OFF)
+  MIDI\                                one .mid per melodic part (Bass.mid, Lead.mid ...)
   Project\                             optional: the .als + samples
 ```
+
+`Main.wav` is the unmastered extended mix. All three sites want the unmastered
+mix in the package, so the bot puts it in under the name each site asks for.
 
 Folder and file name patterns can be changed in Settings.
 
@@ -40,8 +45,10 @@ Folder and file name patterns can be changed in Settings.
 - Drop the export folder on the window (or click the drop zone). The checks run
   straight away: red = FAIL, yellow = WARN, green = PASS. Click a row for the
   fix and the numbers.
-- Pick the profile (tech house, melodic house & techno). BPM comes from the
-  profile; change it to your track's BPM so the null test names the right bars.
+- Pick the profile: the website you're uploading to plus the genre
+  (EDM GP, The Ghost Production or House of Tracks, each with Tech House or
+  Melodic House & Techno). BPM comes from the genre; change it to your track's
+  BPM so the null test names the right bars.
 - **Build buyer zip** is greyed out while anything fails. Warnings need one
   click: "I checked these".
 - **Copy report for qa.md** puts the Markdown report on the clipboard.
@@ -72,14 +79,31 @@ profile not usable. From source: `python -m qabot check ...`.
 
 ## Rules
 
-One JSON file per marketplace and genre. The bundled ones are copied to
-`CryxQAData\rules` on first run; edit those (Settings > Open rules folder) when a
-platform changes a number. Your edits are kept across updates; new fields from
-an update are added underneath them.
+A profile = one website file (`rules/sites/edmgp.json`, `tgp.json`, `hot.json`)
++ one genre file (`rules/genres/tech-house.json`, `melodic-house-techno.json`).
+The website file holds every number and the zip layout; the genre file holds
+BPM and the planned length. A new genre is one small file and shows up for
+every website. The bundled files are copied to `CryxQAData\rules` on first run;
+edit those (Settings > Open rules folder) when a platform changes a number.
+Your edits are kept across updates.
 
-Open questions (BRIEF.md section 8): the master peak range (`master.peak_*`,
-a WARN until `peak_confirmed` is true) and whether radio stems are delivered
-(`mixes.radio_stems_required`).
+Main differences (from the sites' seller pages, checked 2026-10-30; the
+`source` field in each file links them):
+
+| | EDM GP | The Ghost Production | House of Tracks |
+|---|---|---|---|
+| WAV | 44.1 kHz / 16-bit | 44.1 kHz / 16 or 24-bit | 44.1 or 48 kHz / 24 or 32-bit |
+| Master loudness | -9 to -2 LUFS | no target | -9 to -5 LUFS |
+| Master peak | -0.3 to 0 dB | -0.1 dB or lower | -2 to 0 dB |
+| Unmastered peak | -3 to -6 dB true peak, same for every version | -3 dB or lower | no rule |
+| Length | 2:00 to 8:00 | extended 4-8 min, radio 2-3 min (recommended) | 2:30 to 8:00 |
+| Stems | 10 or more, no groups/buses | no minimum | buses wanted; names say only the sound |
+| MP3 320 | masters | masters and unmastered | none |
+| Zip | Extended mix / Radio mix / Unmastered mixes / Stems / MIDI | Mastered / Unmastered / Stems / MIDI / DAW_Project | masters.zip, stems.zip, midi.zip |
+| Exclusive | sold only on EDM GP | | 4 months |
+
+Rules the bot can't measure (exclusivity, samples, vocals, artwork) are listed
+in each report under "Site rules to remember".
 
 ## Portable mode
 

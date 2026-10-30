@@ -6,7 +6,7 @@ ID = "stems_count"
 
 
 def run(ctx):
-    need = ctx.rules["stems"]["min_count"]
+    need = ctx.rules["stems"].get("min_count") or 1
     if not ctx.export.stem_sets:
         return [Result(ID, FAIL, " ".join(ctx.export.problems) or "No stems folder found.",
                        "Export the stems into a folder called 'Stems Extended' inside the export folder.")]
@@ -16,8 +16,7 @@ def run(ctx):
         ctx.note(s.label, "Stems", n)
         if n < need:
             out.append(Result(ID, FAIL, f"{s.label}: {n} stems, needs at least {need}.",
-                              "Export with 'Selected Tracks Only' off / 'All Individual Tracks', "
-                              "including the returns."))
+                              "Export with 'All Individual Tracks', including the returns."))
         else:
-            out.append(Result(ID, PASS, f"{s.label}: {n} stems (at least {need})."))
+            out.append(Result(ID, PASS, f"{s.label}: {n} stems" + (f" (at least {need})." if need > 1 else ".")))
     return out

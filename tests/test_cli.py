@@ -14,7 +14,8 @@ def test_missing_folder(tmp_path):
 def test_profiles(capsys):
     assert cli.main(["profiles"]) == 0
     out = capsys.readouterr().out
-    assert "edmgp-tech-house" in out and "edmgp-melodic-house-techno" in out
+    for pid in ("edmgp-tech-house", "edmgp-melodic-house-techno", "tgp-tech-house", "hot-melodic-house-techno"):
+        assert pid in out
 
 
 def test_build_from_command_line(export, tmp_path, capsys):
