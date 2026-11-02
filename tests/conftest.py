@@ -48,8 +48,8 @@ def config(tmp_path):
 @pytest.fixture
 def ctx_for(config):
     """Context for one export, with optional rule changes: ctx_for(folder, master={"lufs_min": -10})."""
-    def make(folder, include_project=False, **rule_changes):
-        rules = copy.deepcopy(rules_mod.load("edmgp-tech-house"))
+    def make(folder, include_project=False, profile="edmgp-tech-house", **rule_changes):
+        rules = copy.deepcopy(rules_mod.load(profile))
         for section, values in rule_changes.items():
             rules[section].update(values)
         return Context(scan(folder, config), rules, config, include_project=include_project)

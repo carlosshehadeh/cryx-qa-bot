@@ -52,6 +52,8 @@ class Config:
     stems_folders: dict = field(default_factory=lambda: {
         "Extended": "Stems Extended", "Radio": "Stems Radio"})
     project_folder: str = "Project"
+    unmastered_folder: str = "Unmastered"   # optional: unmastered radio mix etc.
+    midi_folder: str = "MIDI"
     main_pattern: str = r"(^|[\s_-])Main$"   # file name (no extension) of the unmastered mix
     extended_pattern: str = "(Extended Mix)"
     radio_pattern: str = "(Radio Mix)"
@@ -91,9 +93,12 @@ class Config:
         p = Path(self.rules_folder)
         d = p if p.is_absolute() else data_dir() / p
         d.mkdir(parents=True, exist_ok=True)
-        for f in (bundle_dir() / "rules").glob("*.json"):
-            if not (d / f.name).exists():
-                shutil.copy2(f, d / f.name)
+        src = bundle_dir() / "rules"
+        for f in src.rglob("*.json"):
+            dst = d / f.relative_to(src)
+            if not dst.exists():
+                dst.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copy2(f, dst)
         return d
 
     def history_path(self) -> Path:

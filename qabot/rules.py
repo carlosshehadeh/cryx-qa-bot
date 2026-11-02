@@ -1,8 +1,10 @@
-"""Marketplace rules: one JSON file per marketplace and genre in rules/.
+"""Marketplace rules. A profile is one website plus one genre, e.g.
+"edmgp-tech-house" = rules/sites/edmgp.json + rules/genres/tech-house.json.
 
-Every number a check uses comes from here, never from the check itself. A
-rules file Carlos edited is merged over the bundled one, so a newer app
-version can add fields without losing his changes.
+Every number a check uses comes from these files, never from the check. A
+site file can hold per-genre changes under "genres". Files Carlos edited
+(in the data folder's rules\\) are merged over the bundled ones, so a newer
+app version can add fields without losing his changes.
 """
 
 import json
@@ -22,25 +24,55 @@ def _read(path):
     return json.loads(Path(path).read_text(encoding="utf-8"))
 
 
-def profiles(rules_dir):
-    """{profile id: display name}, sorted by name."""
-    found = {}
-    for d in (bundle_dir() / "rules", Path(rules_dir)):
-        for f in sorted(Path(d).glob("*.json")):
-            try:
-                found[f.stem] = _read(f).get("name", f.stem)
-            except ValueError:
-                continue
-    return dict(sorted(found.items(), key=lambda kv: kv[1].lower()))
+def _layer(kind, name, rules_dir):
+    """Bundled file with the user's copy merged over it."""
+    data = {}
+    for d in (bundle_dir() / "rules", Path(rules_dir) if rules_dir else None):
+        if d is None:
+            continue
+        f = d / kind / f"{name}.json"
+        if f.exists():
+            data = _merge(data, _read(f))
+    return data
+
+
+def _names(kind, rules_dir):
+    found = set()
+    for d in (bundle_dir() / "rules", Path(rules_dir) if rules_dir else None):
+        if d is not None and (d / kind).is_dir():
+            found |= {f.stem for f in (d / kind).glob("*.json")}
+    return sorted(found)
+
+
+def profiles(rules_dir=None):
+    """{profile id: display name}, e.g. {"edmgp-tech-house": "EDM GP: Tech House"}."""
+    out = {}
+    for site in _names("sites", rules_dir):
+        s = _layer("sites", site, rules_dir)
+        for genre in _names("genres", rules_dir):
+            g = _layer("genres", genre, rules_dir)
+            out[f"{site}-{genre}"] = f"{s.get('name', site)}: {g.get('name', genre)}"
+    return out
+
+
+def split(profile, rules_dir=None):
+    """'edmgp-tech-house' -> ('edmgp', 'tech-house')."""
+    for site in sorted(_names("sites", rules_dir), key=len, reverse=True):
+        if profile.startswith(site + "-"):
+            return site, profile[len(site) + 1:]
+    raise FileNotFoundError(f"No rules for profile '{profile}'")
 
 
 def load(profile, rules_dir=None):
-    bundled = bundle_dir() / "rules" / f"{profile}.json"
-    user = Path(rules_dir) / f"{profile}.json" if rules_dir else None
-    rules = _read(bundled) if bundled.exists() else {}
-    if user and user.exists():
-        rules = _merge(rules, _read(user))
-    if not rules:
-        raise FileNotFoundError(f"No rules file called '{profile}.json'")
-    rules.setdefault("id", profile)
+    site, genre = split(profile, rules_dir)
+    s = _layer("sites", site, rules_dir)
+    g = _layer("genres", genre, rules_dir)
+    if not s or not g:
+        raise FileNotFoundError(f"No rules for profile '{profile}'")
+    rules = _merge(s, s.get("genres", {}).get(genre, {}))
+    rules.pop("genres", None)
+    rules.update({"id": profile, "site": site, "genre": genre, "genre_name": g.get("name", genre),
+                  "bpm": g.get("bpm", 120)})
+    rules.setdefault("length", {})["plan_extended_seconds"] = g.get("plan_extended_seconds")
+    rules["display"] = f"{s.get('name', site)}: {g.get('name', genre)}"
     return rules

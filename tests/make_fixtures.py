@@ -68,6 +68,16 @@ def write_wav(path, data, rate=SR, bits=16, chunks_before=(), chunks_after=(), f
     return path
 
 
+def write_empty_midi(path):
+    """A valid MIDI file with no notes at all: only for checking that MIDI is present."""
+    track = b"\x00\xff\x2f\x00"   # end of track
+    data = (b"MThd" + struct.pack(">IHHH", 6, 0, 1, 96) + b"MTrk" + struct.pack(">I", len(track)) + track)
+    path = Path(path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_bytes(data)
+    return path
+
+
 def info_chunk(**tags):
     body = b"INFO"
     for k, v in tags.items():
@@ -142,6 +152,11 @@ def master_sound(seconds, lufs=-8.0, peak_db=-1.2, seed=3):
     if meter.integrated_loudness(y[probe]) > lufs + 0.5:   # quieter target than the clip allows
         y *= 10 ** ((lufs - meter.integrated_loudness(y[probe])) / 20)
     y = np.clip(y, -ceiling, ceiling)
+    # Loud masters end at -0.2 dBTP true peak: inside every site's master peak range.
+    from qabot.audio import true_peak_db
+    tp = true_peak_db(y)
+    if tp > -0.2 or lufs >= -9:
+        y = y * 10 ** ((-0.2 - tp) / 20)
     y.flags.writeable = False
     return y
 
@@ -152,7 +167,8 @@ def make_export(root, title="Test Track", bars=16, bpm=128, n_stems=12,
                 missing_pump=False, silent_stem=False, stem_48k=False, stem_24bit=False,
                 ref_stem=False, short_stem=False, clip_stem=False, metadata=False, credential=False,
                 private_file=False, main=True, shift_main=0, rack_on=False, drop_stem=None,
-                main_peak_db=-4.5, als_text=None, default_names=False, master_cache=None):
+                main_peak_db=-4.5, als_text=None, default_names=False, master_cache=None,
+                bits=16, midi=True, radio_unmastered=True):
     """Write '<title> EXPORT' under root and return its path."""
     ex = Path(root) / f"{title} EXPORT"
     stems_dir = ex / "Stems Extended"
@@ -192,13 +208,19 @@ def make_export(root, title="Test Track", bars=16, bpm=128, n_stems=12,
         if stem_48k and name == "10 FX Sweep":
             write_wav(stems_dir / f"{name}.wav", x, rate=48000)
             continue
+        kw.setdefault("bits", bits)
         write_wav(stems_dir / f"{name}.wav", x, **kw)
     if default_names:
         write_wav(stems_dir / "13 Audio 12.wav", np.zeros((n, 2)) + 1e-3)
     if ref_stem:
         write_wav(stems_dir / "REF Track.wav", stems["07 Tone A"])
     if main:
-        write_wav(stems_dir / "Main.wav", mix)
+        write_wav(stems_dir / "Main.wav", mix, bits=bits)
+    if radio_unmastered and radio_seconds and masters:
+        write_wav(ex / "Unmastered" / f"{title} (Radio Mix).wav", mix, bits=bits)
+    if midi:
+        for name in ("Bass Sub", "Tone A"):
+            write_empty_midi(ex / "MIDI" / f"{name}.mid")
 
     if masters:
         mdir = ex / "Masters"
@@ -207,12 +229,13 @@ def make_export(root, title="Test Track", bars=16, bpm=128, n_stems=12,
                 continue
             dst = mdir / f"{title} ({label}).wav"
             if metadata:
-                write_wav(dst, master_sound(sec, master_lufs), chunks_before=[info_chunk(IART="Carlos Test")])
+                write_wav(dst, master_sound(sec, master_lufs), bits=bits,
+                          chunks_before=[info_chunk(IART="Carlos Test")])
                 continue
             # Same master sound is shared between exports through a hard link (saves disk and time).
-            cached = Path(master_cache or Path(root) / ".masters") / f"{sec}s {master_lufs:g}.wav"
+            cached = Path(master_cache or Path(root) / ".masters") / f"{sec}s {master_lufs:g} {bits}.wav"
             if not cached.exists():
-                write_wav(cached, master_sound(sec, master_lufs))
+                write_wav(cached, master_sound(sec, master_lufs), bits=bits)
             mdir.mkdir(parents=True, exist_ok=True)
             try:
                 os.link(cached, dst)

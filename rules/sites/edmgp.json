@@ -1,0 +1,101 @@
+{
+  "name": "EDM GP",
+  "full_name": "EDM Ghost Production",
+  "source": [
+    "https://edm-ghost-production.com/for-sellers/package",
+    "https://edm-ghost-production.com/for-sellers/rules"
+  ],
+  "checked": "2026-10-30",
+  "notes": [
+    "Exclusive: the track may be sold only on EDM Ghost Production and must never have been online or sent to anyone.",
+    "No construction kits, AI tools, templates or pre-made melodies/MIDI. Vocals only with a royalty-free or transferable exclusive licence.",
+    "Instrumental mix needed if the track has any vocals (chops and one-shots too): not checked by the bot yet."
+  ],
+  "format": {
+    "sample_rates": [
+      44100
+    ],
+    "stem_bit_depths": [
+      16
+    ],
+    "master_bit_depths": [
+      16
+    ]
+  },
+  "stems": {
+    "min_count": 10,
+    "silent_below_dbfs": -80.0,
+    "max_length_diff_samples": 1,
+    "forbidden_names": [
+      "REF",
+      "SC TRIG",
+      "Sidechain",
+      "BUS",
+      "GROUP",
+      "Master"
+    ],
+    "strip_numbers": false
+  },
+  "mix": {
+    "peak_measure": "true_peak",
+    "peak_min_db": -6.0,
+    "peak_max_db": -3.0,
+    "same_peak_tolerance_db": 0.5
+  },
+  "null_test": {
+    "pass_db": -40.0,
+    "fail_db": -25.0,
+    "max_offset_samples": 64,
+    "beats_per_bar": 4,
+    "_note": "Starting thresholds. Tune on the first real exports."
+  },
+  "master": {
+    "lufs_min": -9.0,
+    "lufs_max": -2.0,
+    "peak_measure": "true_peak",
+    "peak_min_db": -0.3,
+    "peak_max_db": 0.0,
+    "peak_confirmed": true
+  },
+  "length": {
+    "extended": {
+      "min": 120,
+      "max": 480,
+      "level": "FAIL"
+    },
+    "radio": {
+      "min": 120,
+      "max": 480,
+      "level": "FAIL"
+    },
+    "plan_tolerance_seconds": 45
+  },
+  "mixes": {
+    "extended_required": true,
+    "radio_required": true,
+    "radio_stems_required": false,
+    "unmastered_required": true,
+    "unmastered_each_version": true
+  },
+  "midi": {
+    "required": true
+  },
+  "mp3": {
+    "masters": true,
+    "unmastered": false,
+    "bitrate_kbps": 320
+  },
+  "package": {
+    "zip": "single",
+    "layout": {
+      "master_extended": "Extended mix/{title} (Extended Mix).{ext}",
+      "master_radio": "Radio mix/{title} (Radio Mix).{ext}",
+      "unmastered_extended": "Unmastered mixes/{title} (Extended Mix) Unmastered.{ext}",
+      "unmastered_radio": "Unmastered mixes/{title} (Radio Mix) Unmastered.{ext}",
+      "stems_extended": "Stems/{name}",
+      "stems_radio": "Stems/Radio/{name}",
+      "midi": "MIDI/{name}",
+      "project": "Project/{path}"
+    }
+  }
+}

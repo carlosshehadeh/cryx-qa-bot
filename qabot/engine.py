@@ -25,8 +25,8 @@ def check(folder, config, profile=None, bpm=None, title=None, key="", include_pr
     if include_project is None:
         include_project = config.include_project
     ctx = Context(export, rules, config, bpm=bpm, include_project=include_project)
-    report = Report(title=export.title, profile=rules.get("name", profile), folder=str(export.root),
-                    version=__version__, bpm=ctx.bpm, key=key or "")
+    report = Report(title=export.title, profile=rules.get("display", profile), folder=str(export.root),
+                    version=__version__, bpm=ctx.bpm, key=key or "", site_notes=list(rules.get("notes", [])))
     report.results = run_all(ctx, progress)
     report.numbers = ctx.numbers
     if history:

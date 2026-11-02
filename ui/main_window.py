@@ -371,16 +371,17 @@ class MainWindow(QMainWindow):
                 return
         run, cfg = self.run, self.config
         include, make_mp3 = self.project_box.isChecked(), self.mp3_box.isChecked()
-        bitrate = run.rules.get("mp3", {}).get("bitrate_kbps", 320)
 
         def job(progress):
-            return package.build(run.export, cfg, run.report, include_project=include, make_mp3=make_mp3,
-                                 warnings_ok=True, bitrate=bitrate, progress=progress)
+            return package.build(run.export, cfg, run.report, run.rules, include_project=include,
+                                 make_mp3=make_mp3, warnings_ok=True, progress=progress)
         self._start(job, self._built, "Building the buyer folder and zip…")
 
     def _built(self, built):
-        self.statusBar().showMessage(f"Built {built.zip.name} ({built.files} files). Report: {built.report.name}")
-        QMessageBox.information(self, APP_NAME, f"Done: {built.zip}\n\nReport (stays with you): {built.report}")
+        names = ", ".join(z.name for z in built.zips)
+        self.statusBar().showMessage(f"Built {names} ({built.files} files). Report: {built.report.name}")
+        QMessageBox.information(self, APP_NAME, "Done:\n" + "\n".join(str(z) for z in built.zips)
+                                + f"\n\nReport (stays with you): {built.report}")
 
     def copy_report(self):
         if self.run:

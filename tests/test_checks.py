@@ -16,7 +16,7 @@ from tests.conftest import levels
 
 def test_registry_has_every_check_once():
     ids = [c.ID for c in CHECKS]
-    assert len(ids) == len(set(ids)) == 16
+    assert len(ids) == len(set(ids)) == 17
 
 
 def test_a_crashing_check_fails_alone(export, ctx_for, monkeypatch):
@@ -33,7 +33,11 @@ def test_files_format(export, ctx_for):
     bad = files_format.run(ctx_for(export("Wrong Format", stem_48k=True, stem_24bit=True)))
     assert levels(bad) == [FAIL, FAIL]
     text = " ".join(f for r in bad for f in r.files)
-    assert "10 FX Sweep.wav: 48 kHz" in text and "07 Tone A.wav: 24-bit" in text
+    assert "10 FX Sweep.wav: 48 kHz" in text and "07 Tone A.wav: 24-bit, needs 16-bit" in text
+    # House of Tracks wants 24 or 32-bit and takes 48 kHz.
+    hot = files_format.run(ctx_for(export("Hot Format", bits=24), profile="hot-tech-house"))
+    assert levels(hot) == [PASS]
+    assert levels(files_format.run(ctx_for(export(), profile="hot-tech-house"))) == [FAIL]
 
 
 def test_files_naming(export, ctx_for):
@@ -82,10 +86,14 @@ def test_stems_clipping(export, ctx_for):
 
 
 def test_mix_headroom(export, ctx_for):
-    assert levels(mix_headroom.run(ctx_for(export()))) == [PASS]
-    assert levels(mix_headroom.run(ctx_for(export("Hot Mix", main_peak_db=-1.0)))) == [FAIL]
-    assert levels(mix_headroom.run(ctx_for(export("Quiet Mix", main_peak_db=-9.0)))) == [WARN]
-    assert levels(mix_headroom.run(ctx_for(export("No Main", main=False)))) == [WARN]
+    # Extended (Main.wav) and radio (Unmastered folder) unmastered mixes.
+    assert levels(mix_headroom.run(ctx_for(export()))) == [PASS, PASS]
+    assert levels(mix_headroom.run(ctx_for(export("Hot Mix", main_peak_db=-1.0)))) == [FAIL, FAIL]
+    assert levels(mix_headroom.run(ctx_for(export("Quiet Mix", main_peak_db=-9.0)))) == [WARN, WARN]
+    # The Ghost Production only asks for at least 3 dB of headroom.
+    assert levels(mix_headroom.run(ctx_for(export("Quiet Mix", main_peak_db=-9.0), profile="tgp-tech-house"))) == \
+        [PASS, PASS]
+    assert levels(mix_headroom.run(ctx_for(export("No Main", main=False, radio_unmastered=False)))) == [WARN]
 
 
 def test_master_loudness(export, ctx_for):
@@ -152,6 +160,32 @@ def test_private_files(export, ctx_for):
     r = private_files.run(ctx_for(export("Private Files", private_file=True)))
     assert levels(r) == [WARN]
     assert sorted(r[0].files) == ["Masters/qa notes.md", "Splice License.pdf"]
+
+
+def test_midi_present(export, ctx_for):
+    from qabot.checks import midi_present
+    assert levels(midi_present.run(ctx_for(export()))) == [PASS]
+    assert levels(midi_present.run(ctx_for(export("No Midi", midi=False)))) == [FAIL]
+
+
+def test_unmastered_each_version(export, ctx_for):
+    """EDM GP wants an unmastered mix for every version; TGP only the main one."""
+    folder = export("No Radio Unmastered", radio_unmastered=False)
+    r = mixes_present.run(ctx_for(folder))
+    assert levels(r) == [FAIL] and "unmastered Radio Mix" in r[0].message
+    assert levels(mixes_present.run(ctx_for(folder, profile="tgp-tech-house"))) == [PASS]
+
+
+def test_site_rules_differ(export, ctx_for):
+    folder = export()
+    # TGP: no LUFS target, extended mix 4 to 8 minutes is only a recommendation.
+    assert "no LUFS target" in master_loudness.run(ctx_for(folder, profile="tgp-tech-house"))[0].message
+    assert levels(master_length.run(ctx_for(folder, profile="tgp-tech-house"))) == [WARN, PASS]
+    # HoT: 2:30 minimum, so a 2:10 extended mix fails.
+    assert levels(master_length.run(ctx_for(folder, profile="hot-tech-house")))[0] == FAIL
+    # HoT asks for bus stems, EDM GP forbids grouped stems.
+    assert "BUS" not in ctx_for(folder, profile="hot-tech-house").rules["stems"]["forbidden_names"]
+    assert "BUS" in ctx_for(folder).rules["stems"]["forbidden_names"]
 
 
 def test_is_private_words():

@@ -39,7 +39,7 @@ def run(ctx):
                        "Open Settings and add your real name, old and new artist names, email and "
                        "Windows user folder (C:\\Users\\...).")]
     banned = [(w, _variants(w)) for w in words]
-    pl = package.plan(ctx.export, ctx.config, getattr(ctx, "include_project", False))
+    pl = package.plan(ctx.export, ctx.config, ctx.rules, ctx.include_project)
     fails, warns = [], []
 
     w = _hit(pl.folder_name, banned)

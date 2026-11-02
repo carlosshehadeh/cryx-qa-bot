@@ -62,38 +62,67 @@ def is_private(path, config):
     return False
 
 
-def plan(export, config, include_project=False, make_mp3=True):
+LEADING_TAG = re.compile(r"^(\d+|[A-La-l])[\s._-]+")
+
+
+def _fill(template, title, ext="", name="", path=""):
+    return template.format(title=title, title_=re.sub(r"\s+", "_", title.strip()), ext=ext, name=name, path=path)
+
+
+def plan(export, config, rules, include_project=False, make_mp3=True):
+    """What goes to the buyer, laid out the way the site wants it."""
+    layout = rules["package"]["layout"]
+    mp3s = rules.get("mp3", {})
+    strip = rules.get("stems", {}).get("strip_numbers")
     p = Plan(export.title)
     shipped = set()
+    used = set()
 
     def add(src, dst, kind):
+        if dst in used:   # two files would land on one name: keep the original name
+            dst = dst.rsplit("/", 1)[0] + "/" + src.name if "/" in dst else src.name
+        used.add(dst)
         p.items.append(Item(src, dst, kind))
         shipped.add(src)
 
+    def audio(src, role, with_mp3):
+        add(src, _fill(layout[role], export.title, "wav"), "wav")
+        if with_mp3 and make_mp3:
+            add(src, _fill(layout[role], export.title, "mp3"), "mp3")
+
     for kind in ("Extended", "Radio"):
-        src = export.masters.get(kind)
-        if src:
-            add(src, src.name, "wav")
-            if make_mp3:
-                add(src, src.with_suffix(".mp3").name, "mp3")
+        if kind in export.masters:
+            audio(export.masters[kind], f"master_{kind.lower()}", mp3s.get("masters"))
+    folder = layout["master_extended"].rsplit("/", 1)[0] + "/" if "/" in layout["master_extended"] else ""
     for src in export.unknown_masters:
         if src.suffix.lower() in (".wav", ".wave"):
-            add(src, src.name, "wav")
+            add(src, folder + src.name, "wav")
+    deliver_unmastered = rules.get("mixes", {}).get("unmastered_required")
+    for kind, src in export.unmastered.items():
+        if deliver_unmastered and src.suffix.lower() in (".wav", ".wave"):
+            audio(src, f"unmastered_{kind.lower()}", mp3s.get("unmastered"))
+        else:
+            p.excluded.append((src, "unmastered mix, only used for the null test"))
+            shipped.add(src)
     for s in export.stem_sets:
+        role = f"stems_{s.name.lower()}"
         for src in s.stems:
-            if is_private(src, config):
+            if is_private(src, config) or src.suffix.lower() not in (".wav", ".wave"):
                 continue
-            if src.suffix.lower() in (".wav", ".wave"):
-                add(src, f"{s.label}/{src.name}", "wav")
+            name = LEADING_TAG.sub("", src.name) if strip else src.name
+            add(src, _fill(layout[role], export.title, name=name or src.name), "wav")
         if s.main:
-            p.excluded.append((s.main, "unmastered mix, only used for the null test"))
             shipped.add(s.main)
+    for src in export.midi:
+        add(src, _fill(layout["midi"], export.title, name=src.name), "copy")
     if include_project and export.project:
         for src in sorted(export.project.rglob("*")):
             if not src.is_file():
                 continue
             parts = {x.lower() for x in src.relative_to(export.project).parts[:-1]}
-            if "backup" in parts:
+            if not layout.get("project"):
+                p.excluded.append((src, "this site doesn't take project files"))
+            elif "backup" in parts:
                 p.excluded.append((src, "Ableton backup copy"))
             elif src.suffix.lower() == ".asd":
                 p.excluded.append((src, "Ableton analysis file (Live remakes it)"))
@@ -102,7 +131,8 @@ def plan(export, config, include_project=False, make_mp3=True):
             elif is_private(src, config):
                 p.excluded.append((src, "looks private"))
             else:
-                add(src, f"{config.project_folder}/{src.relative_to(export.project).as_posix()}", "copy")
+                add(src, _fill(layout["project"], export.title,
+                               path=src.relative_to(export.project).as_posix()), "copy")
             shipped.add(src)
     for src in export.files:
         if src in shipped:
@@ -125,19 +155,20 @@ def output_root(export, config):
 @dataclass
 class Built:
     folder: Path
-    zip: Path
+    zips: list
     report: Path
     files: int
 
 
-def build(export, config, report, include_project=False, make_mp3=True, warnings_ok=False,
-          bitrate=320, progress=None):
+def build(export, config, report, rules, include_project=False, make_mp3=True, warnings_ok=False,
+          progress=None):
     if report.count(FAIL):
         raise Refused(f"Not built: {report.count(FAIL)} check(s) failed. Fix them and run the checks again.")
     if report.count(WARN) and not warnings_ok:
         raise Refused("Not built: confirm the warnings first ('I checked these').")
 
-    pl = plan(export, config, include_project, make_mp3)
+    pl = plan(export, config, rules, include_project, make_mp3)
+    bitrate = rules.get("mp3", {}).get("bitrate_kbps", 320)
     out = output_root(export, config)
     out.mkdir(parents=True, exist_ok=True)
     buyer = out / pl.folder_name
@@ -165,22 +196,31 @@ def build(export, config, report, include_project=False, make_mp3=True, warnings
         shutil.rmtree(buyer)
         raise Refused("Not built: " + " ".join(problems))
 
-    zip_path = out / f"{pl.folder_name}.zip"
-    tmp = zip_path.with_name(zip_path.name + ".part")
-    with zipfile.ZipFile(tmp, "w") as z:
-        for f in sorted(buyer.rglob("*")):
-            if f.is_file():
-                how = zipfile.ZIP_STORED if f.suffix.lower() in STORED else zipfile.ZIP_DEFLATED
-                z.write(f, f"{pl.folder_name}/{f.relative_to(buyer).as_posix()}", compress_type=how)
-    problems = verify_zip(tmp, export, config)
-    if problems:
-        tmp.unlink()
-        raise Refused("Zip refused: " + " ".join(problems))
-    tmp.replace(zip_path)
+    if rules["package"].get("zip") == "per_folder":
+        # One zip per top folder (masters.zip, stems.zip, ...), for sites that upload them separately.
+        parts = [(out / f"{pl.title} {d.name}.zip", d, d.name) for d in sorted(buyer.iterdir()) if d.is_dir()]
+    else:
+        parts = [(out / f"{pl.folder_name}.zip", buyer, pl.folder_name)]
+    zips = []
+    for zip_path, folder, prefix in parts:
+        tmp = zip_path.with_name(zip_path.name + ".part")
+        with zipfile.ZipFile(tmp, "w") as z:
+            for f in sorted(folder.rglob("*")):
+                if f.is_file():
+                    how = zipfile.ZIP_STORED if f.suffix.lower() in STORED else zipfile.ZIP_DEFLATED
+                    z.write(f, f"{prefix}/{f.relative_to(folder).as_posix()}", compress_type=how)
+        problems = verify_zip(tmp, export, config)
+        if problems:
+            tmp.unlink()
+            for done in zips:
+                done.unlink()
+            raise Refused("Zip refused: " + " ".join(problems))
+        tmp.replace(zip_path)
+        zips.append(zip_path)
     report_path = report.write(out / f"{pl.title} QA REPORT.md")
     if progress:
         progress(len(pl.items), len(pl.items), "done")
-    return Built(buyer, zip_path, report_path, len(pl.items))
+    return Built(buyer, zips, report_path, len(pl.items))
 
 
 def _private_name(name, export, config):

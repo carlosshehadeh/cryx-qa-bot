@@ -6,6 +6,8 @@ Expected layout (BRIEF.md section 4), all names from config.json:
       Masters\\        <Title> (Extended Mix).wav, <Title> (Radio Mix).wav
       Stems Extended\\ 01 Kick.wav ... Main.wav (unmastered mix, null test only)
       Stems Radio\\    same, if radio stems are delivered
+      Unmastered\\     optional: unmastered mixes not found as a Main.wav (e.g. the radio one)
+      MIDI\\           MIDI of the melodic parts (copied as is, never written by the bot)
       Project\\        optional: .als + samples
 """
 
@@ -38,6 +40,8 @@ class ExportFolder:
     unknown_masters: list = field(default_factory=list)
     stem_sets: list = field(default_factory=list)
     project: Path = None
+    unmastered: dict = field(default_factory=dict)  # "Extended"/"Radio" -> Path (master chain off)
+    midi: list = field(default_factory=list)
     files: list = field(default_factory=list)    # every file, for the privacy checks
     problems: list = field(default_factory=list)  # plain-English layout problems
 
@@ -45,6 +49,7 @@ class ExportFolder:
         wavs = list(self.masters.values()) + list(self.unknown_masters)
         for s in self.stem_sets:
             wavs += s.stems + ([s.main] if s.main else [])
+        wavs += [p for p in self.unmastered.values() if p not in wavs]
         return [p for p in wavs if p.suffix.lower() in (".wav", ".wave")]
 
     def stem_set(self, name):
@@ -112,6 +117,23 @@ def scan(root, config, title=None) -> ExportFolder:
     if not ex.stem_sets:
         wanted = " or ".join(f"'{n}'" for n in config.stems_folders.values())
         ex.problems.append(f"No stems folder ({wanted}) in the export.")
+
+    for s in ex.stem_sets:
+        if s.main:
+            ex.unmastered[s.name] = s.main
+    um = _find_dir(root, config.unmastered_folder)
+    if um:
+        for p in sorted(um.iterdir()):
+            if not p.is_file() or p.suffix.lower() not in AUDIO_EXTENSIONS:
+                continue
+            low = p.stem.lower()
+            kind = ("Radio" if config.radio_pattern.lower() in low else
+                    "Extended" if config.extended_pattern.lower() in low else None)
+            if kind and kind not in ex.unmastered:
+                ex.unmastered[kind] = p
+    md = _find_dir(root, config.midi_folder)
+    if md:
+        ex.midi = sorted(p for p in md.rglob("*") if p.is_file() and p.suffix.lower() in (".mid", ".midi"))
 
     ex.project = _find_dir(root, config.project_folder)
     return ex
